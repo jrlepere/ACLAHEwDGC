@@ -24,11 +24,11 @@ public class ACLAHE extends ATransformation {
 
 	/**
 	 * Creates object for ACLAHE transformation. 
-	 * @param image the default image to transform
-	 * @param imageLabel the image label to modify to display the transformed image
+	 * @param hsbImage the original image in hsb format
+	 * @param imageLabel the image label to modify for displaying the transformed image
 	 */
-	public ACLAHE(int[][] image, JLabel imageLabel) {
-		super(image, imageLabel);
+	public ACLAHE(float[][][] hsbImage, JLabel imageLabel) {
+		super(hsbImage, imageLabel);
 		
 		// initial parameters
 		blockSize = 4;
@@ -111,6 +111,7 @@ public class ACLAHE extends ATransformation {
 
 	
 	public void transform() {
+		
 		/*
 		 * 5 Steps
 		 * 1) Image Decomposition
@@ -149,7 +150,7 @@ public class ACLAHE extends ATransformation {
 				int pixelRow = r % pixelsPerBlockRow;
 				
 				// set the cut image pixel
-				cutImage[blockCol][blockRow][pixelCol][pixelRow] = image[c][r];
+				cutImage[blockCol][blockRow][pixelCol][pixelRow] = hsbBrightnessValues[c][r];
 			}
 		}
 		
@@ -157,7 +158,7 @@ public class ACLAHE extends ATransformation {
 		// -- STEP 2 : Histogram Calculations -- //
 		
 		// Initializes an array for holding the histogram of EACH block 
-		int[][][] histogramsPerBlock = new int[numBlocksCol][numBlocksRow][256];
+		int[][][] histogramsPerBlock = new int[numBlocksCol][numBlocksRow][hsbBrightnessMaxIntValue+1];
 		
 		// Initialize an array for holding the minimum, maximum, and average value of each block, for future use
 		int[][] minPerBlock = new int[numBlocksCol][numBlocksRow];
@@ -175,16 +176,16 @@ public class ACLAHE extends ATransformation {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
 				for (int pixelC = 0; pixelC < pixelsPerBlockCol; pixelC ++) {
 					for (int pixelR = 0; pixelR < pixelsPerBlockRow; pixelR ++) {
-						// get the gray value
-						int gv = cutImage[blockC][blockR][pixelC][pixelR];
+						// get the brightness value
+						int brightness = cutImage[blockC][blockR][pixelC][pixelR];
 						
-						// increment the gray value index of the histogram for the block
-						histogramsPerBlock[blockC][blockR][gv] += 1;
+						// increment the brightness value index of the histogram for the block
+						histogramsPerBlock[blockC][blockR][brightness] += 1;
 						
 						// update min, max and avg count values per block
-						if (gv < minPerBlock[blockC][blockR]) minPerBlock[blockC][blockR] = gv;
-						if (gv > maxPerBlock[blockC][blockR]) maxPerBlock[blockC][blockR] = gv;
-						avgPerBlock[blockC][blockR] += gv;
+						if (brightness < minPerBlock[blockC][blockR]) minPerBlock[blockC][blockR] = brightness;
+						if (brightness > maxPerBlock[blockC][blockR]) maxPerBlock[blockC][blockR] = brightness;
+						avgPerBlock[blockC][blockR] += brightness;
 					}
 				}
 				// calculate average per block
@@ -224,7 +225,7 @@ public class ACLAHE extends ATransformation {
 		    M = # pixels in each block
 		    N = dynamic range of the block
 		    lmax = max pixel value in each block
-		    R = 255
+		    R = hsbBrightnessMaxIntValue
 		    c = 0.0001
 		    Avg = average pixel value
 		    P, α = passed parameters
@@ -239,29 +240,29 @@ public class ACLAHE extends ATransformation {
 				int N = lmax - minPerBlock[blockC][blockR];
 				int avg = avgPerBlock[blockC][blockR];
 				double std = stdPerBlock[blockC][blockR];
-				int B = (int) ((M/N)*(1.0 + P*(lmax/255.0) + (alpha/100.0)*(std/(avg+0.0001))));
+				int B = (int) ((M/N)*(1.0 + P*(lmax/((float) hsbBrightnessMaxIntValue)) + (alpha/100.0)*(std/(avg+0.0001))));
 				
 				// store the total clipped for redistribution
 				int totalClipped = 0;
 				
 				// clip the histogram
-				for (int gv = 0; gv < 256; gv ++) {
-					// get the count for this gray value and block
-					int gvCount = histogramsPerBlock[blockC][blockR][gv];
-					if (gvCount > B) {
+				for (int brightness = 0; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					// get the count for this brightness value and block
+					int brightnessCount = histogramsPerBlock[blockC][blockR][brightness];
+					if (brightnessCount > B) {
 						// add amount clipped
-						totalClipped += gvCount - B;
+						totalClipped += brightnessCount - B;
 						// clip
-						histogramsPerBlock[blockC][blockR][gv] = B;
+						histogramsPerBlock[blockC][blockR][brightness] = B;
 					}
 				}
 				
-				// redistribute amount for each gv
-				int redistributionPerGv = totalClipped / 256;
+				// redistribute amount for each brightness
+				int redistributionPerBrightness = totalClipped / (hsbBrightnessMaxIntValue+1);
 				
 				// redistribute
-				for (int gv = 0; gv < 256; gv ++) {
-					histogramsPerBlock[blockC][blockR][gv] += redistributionPerGv;
+				for (int brightness = 0; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					histogramsPerBlock[blockC][blockR][brightness] += redistributionPerBrightness;
 				}
 			}
 		}
@@ -269,12 +270,12 @@ public class ACLAHE extends ATransformation {
 		
 		// STEP 4 - Histogram Equalization Function Mapping -- //
 		
-		// Calculate mapped value for each gray value per block w/ histogram equalization
+		// Calculate mapped value for each brightness value per block w/ histogram equalization
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
 				// calculate running histogram
-				for (int gv = 1; gv < 256; gv ++) {
-					histogramsPerBlock[blockC][blockR][gv] += histogramsPerBlock[blockC][blockR][gv-1];
+				for (int brightness = 1; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					histogramsPerBlock[blockC][blockR][brightness] += histogramsPerBlock[blockC][blockR][brightness-1];
 				}
 				
 				// the maximum value for this block
@@ -284,8 +285,8 @@ public class ACLAHE extends ATransformation {
 				double heFactor = ((double) maxValueInBlock) / pixelsPerBock;
 				
 				// calculate mapping function w/ histogram equalization
-				for (int gv = 0; gv < 256; gv ++) {
-					histogramsPerBlock[blockC][blockR][gv] = (int) (heFactor * histogramsPerBlock[blockC][blockR][gv]);
+				for (int brightness = 0; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					histogramsPerBlock[blockC][blockR][brightness] = (int) (heFactor * histogramsPerBlock[blockC][blockR][brightness]);
 				}
 			}
 		}
@@ -294,7 +295,7 @@ public class ACLAHE extends ATransformation {
 		// STEP 5 - Bilinear Interpolation -- //
 		
 		// the transformed image
-		int[][] newImage = new int[Utilities.IMAGE_SIZE][Utilities.IMAGE_SIZE];
+		int[][] hsbBrightnessNewValues = new int[Utilities.IMAGE_SIZE][Utilities.IMAGE_SIZE];
 		
 		// half of the block size col and row
 		int halfPixelsPerBlockCol = pixelsPerBlockCol / 2;
@@ -304,7 +305,7 @@ public class ACLAHE extends ATransformation {
 		for (int c = 0; c < Utilities.IMAGE_SIZE; c ++) {
 			for (int r = 0; r < Utilities.IMAGE_SIZE; r ++) {
 				// the original pixel value
-				int p = image[c][r];
+				int p = hsbBrightnessValues[c][r];
 				
 				// block coordinates for this point
 				int blockC = c / pixelsPerBlockCol;
@@ -355,13 +356,13 @@ public class ACLAHE extends ATransformation {
 	            int Td = histogramsPerBlock[bc2][br2][p];
 	            
 	            // calculate and set transformed pixel value
-	            newImage[c][r] =(int) (m * (n * Ta + (1 - n) * Tb) + (1 - m) * (n * Tc + (1 - n) * Td));
+	            hsbBrightnessNewValues[c][r] =(int) (m * (n * Ta + (1 - n) * Tb) + (1 - m) * (n * Tc + (1 - n) * Td));
 	            
 			}
 		}
 		
 		// set transformed image
-		imageLabel.setIcon(new ImageIcon(Utilities.createBufferedImage(newImage)));
+		imageLabel.setIcon(new ImageIcon(Utilities.createBufferedImage(hsbImage, hsbBrightnessNewValues, hsbBrightnessMaxIntValue)));
 		
 	}
 	

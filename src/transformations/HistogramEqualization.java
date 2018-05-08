@@ -12,25 +12,28 @@ import utils.Utilities;
  */
 public class HistogramEqualization extends ATransformation {
 
-	public HistogramEqualization(int[][] image, JLabel imageLabel) {
-		super(image, imageLabel);
-		
-		parameterPanel.add(new JLabel("HistoEqual"));
+	/**
+	 * Object for executing histogram equalization.
+	 * @param hsbImage the original image in hsb format
+	 * @param imageLabel the image label to modify for displaying the transformed image
+	 */
+	public HistogramEqualization(float[][][] hsbImage, JLabel imageLabel) {
+		super(hsbImage, imageLabel);
 	}
 
 	public void transform() {
 		
-		// the matrix for the transformed image
-		int[][] newImage = new int[Utilities.IMAGE_SIZE][Utilities.IMAGE_SIZE];
+		// the matrix for the new brightness values
+		int[][] hsbBrightnessNewValues = new int[Utilities.IMAGE_SIZE][Utilities.IMAGE_SIZE];
 		
 		// array for holding the histogram of the image
-		int[] histogram = new int[256];
+		int[] histogram = new int[hsbBrightnessMaxIntValue + 1];
 		
 		// initialize the histogram
 		for (int c = 0; c < Utilities.IMAGE_SIZE; c ++) {
 			for (int r = 0; r < Utilities.IMAGE_SIZE; r ++) {
-				// increment the histogram index at the pixel gray value
-				histogram[this.image[c][r]] ++;
+				// increment the histogram index at the brightness value
+				histogram[this.hsbBrightnessValues[c][r]] ++;
 			}
 		}
 		
@@ -40,21 +43,21 @@ public class HistogramEqualization extends ATransformation {
 		}
 		
 		// histogram equalization multiplication factor
-		double heFactor = 255.0 / (Utilities.IMAGE_SIZE * Utilities.IMAGE_SIZE);
+		double heFactor = ((float) (hsbBrightnessMaxIntValue)) / (Utilities.IMAGE_SIZE * Utilities.IMAGE_SIZE);
 		
 		// set the new image by performing histogram equalization
 		for (int c = 0; c < Utilities.IMAGE_SIZE; c ++) {
 			for (int r = 0; r < Utilities.IMAGE_SIZE; r ++) {
-				// get the original gray value
-				int gv = image[c][r];
+				// get the original hsb brightness value
+				int gv = hsbBrightnessValues[c][r];
 
-				// calculate the new gray value and set the the new image matrix
-				newImage[c][r] = (int) (heFactor * histogram[gv]);
+				// calculate and set the new brightness value
+				hsbBrightnessNewValues[c][r] = (int) (heFactor * histogram[gv]);
 			}
 		}
 		
-		// set the transformed image on the panel
-		imageLabel.setIcon(new ImageIcon(Utilities.createBufferedImage(newImage)));
+		// set the new transformed image
+		imageLabel.setIcon(new ImageIcon(Utilities.createBufferedImage(hsbImage, hsbBrightnessNewValues, hsbBrightnessMaxIntValue)));
 		
 	}
 	

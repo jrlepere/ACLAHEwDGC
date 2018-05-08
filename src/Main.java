@@ -75,7 +75,7 @@ public class Main {
 		imageLabel.setVerticalAlignment(JLabel.CENTER);
 		
 		// default image
-		int[][] defaultImage = Utilities.getDefaultImage();
+		float[][][] defaultImage = Utilities.getDefaultImage();
 		
 		// transformations
 		ITransformation[] transformations = new ITransformation[] {
@@ -120,12 +120,6 @@ public class Main {
 		// return the panel
 		return mainPanel;
 		
-	}
-	
-	public static void setParameterSelectionPanel(JPanel parameterPanel, JPanel newParameterPanel) {
-		parameterPanel = newParameterPanel;
-		parameterPanel.revalidate();
-		parameterPanel.repaint();
 	}
 	
 	private static final String FRAME_TITLE = "ACLAHEwDGC";

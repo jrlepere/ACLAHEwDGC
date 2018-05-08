@@ -6,60 +6,70 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+/**
+ * Implements utility functions for the application
+ * @author JLepere2
+ * @date 05/07/2019
+ */
 public class Utilities {
 
 	/**
-	 * Converts an array of pixels to a buffered image for viewing.
-	 * @param image the pixel image.
-	 * @return a buffered image of the pixel image.
+	 * Gets a buffered image from the modified brightness values
+	 * @param hsbImage the original hsb image
+	 * @param newBrightnessValues the new brightness values
+	 * @param hsbBrightnessMaxIntValue the maximum brightness value used to normalize brightness between 0.0 and 1.0
+	 * @return
 	 */
-	public static BufferedImage createBufferedImage(int[][] image) {
-		
-		// image dimensions
-		int cols = image.length;
-		int rows = image[0].length;
+	public static BufferedImage createBufferedImage(float[][][] hsbImage, int[][] newBrightnessValues, int hsbBrightnessMaxIntValue) {
 		
 		// buffered image for the image
-		BufferedImage buffImage = new BufferedImage(image.length, image[0].length, BufferedImage.TYPE_BYTE_GRAY);
+		BufferedImage buffImage = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_ARGB);
 		
-		for (int c = 0; c < cols; c ++) {
-			for (int r = 0; r < rows; r ++) {
+		for (int y = 0; y < IMAGE_SIZE; y ++) {
+			for (int x = 0; x < IMAGE_SIZE; x ++) {
 				
-				// get the gray pixel value value
-				int gv = image[c][r] & 0xff;
+				// get original hsb
+				float[] hsb = hsbImage[y][x];
 				
-				// convert the pixel value to rgb format for visualization
-				// TODO test if we can change buffered image type.
-				int rgbGV = 0xff000000 + (gv << 16) + (gv << 8) + gv;
+				// hue, saturation and brightness values
+				float hue = hsb[0];
+				float saturation = hsb[1];
+				float brightness = (newBrightnessValues[y][x] / ((float) (hsbBrightnessMaxIntValue)));
+				
+				// get rgb from hsb
+				int rgb = Color.HSBtoRGB(hue, saturation, brightness);
 				
 				// set buffered image
-				buffImage.setRGB(r, c, rgbGV);
+				buffImage.setRGB(x, y, rgb);
+				
 			}
-			
 		}
 		
 		return buffImage;
 	}
 	
-	public static int[][] getDefaultImage() {
+	/**
+	 * Gets an HSB matrix from the default image
+	 * @return an HSB matrix of the default image
+	 */
+	public static float[][][] getDefaultImage() {
 		
-		// matrix to hold the pixels
-		int[][] pixelMatrix = new int[IMAGE_SIZE][IMAGE_SIZE];
+		// matrix to hold the the hsb values
+		float[][][] hsbMatrix = new float[IMAGE_SIZE][IMAGE_SIZE][3];
 		
 		// buffered image from IO read
 		BufferedImage image;
 		try {
+			
 			// load the default image
 			image = ImageIO.read(Utilities.class.getResourceAsStream(defaultImagePath));
-			System.out.println(image.getType());
 			
 			// image parameters
 			int loadedImageHeight = image.getHeight();
 			int loadedImageWidth = image.getWidth();
 			
-			// converts the image to gray scale
-			//BufferedImage loadedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-			BufferedImage loadedImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+			// converts the image to rgb
+			BufferedImage loadedImage = new BufferedImage(loadedImageWidth, loadedImageHeight, BufferedImage.TYPE_INT_RGB);
 			ColorConvertOp op = new ColorConvertOp(image.getColorModel().getColorSpace(), loadedImage.getColorModel().getColorSpace(), null);
 		    op.filter(image, loadedImage);
 		   
@@ -67,24 +77,21 @@ public class Utilities {
 		 	double heightRatio = ((double) loadedImageHeight) / IMAGE_SIZE;
 		 	double widthRatio = ((double) loadedImageWidth) / IMAGE_SIZE;
 		 	
-		 	// set the pixel matrix of the image
+		 	// set the hsb matrix of the image
 			for (int y = 0; y < IMAGE_SIZE; y ++) {
 				for (int x = 0; x < IMAGE_SIZE; x ++) {
-					// get the closest pixel in the loaded image
-					int gv = loadedImage.getRGB((int) (x * widthRatio), (int) (y * heightRatio));
 					
-					/*int bgr = loadedImage.getRGB((int) (x * widthRatio), (int) (y * heightRatio));
-					int b = bgr & 0xFF0000;
-					int g = bgr & 0x00FF00;
-					int r = bgr & 0x0000FF;*/
+					// get the rgb values
+					int rgb = loadedImage.getRGB((int) (x * widthRatio), (int) (y * heightRatio));
+					int r = (rgb >> 16) & 0xFF;
+					int g = (rgb >> 8) & 0xFF;
+					int b = rgb & 0xFF;
 					
-					//float[] hsb = Color.RGBtoHSB(r, g, b, null)[2];
+					// convert rgb to hsv
+					float[] hsb = Color.RGBtoHSB(r, g, b, null);
 					
-					// and to verify we are getting gray scale, last 8 bits (this should have no affect)
-					//gv = gv & 0xff;
-					
-					// set the pixel matrix
-					pixelMatrix[y][x] = gv;
+					// set the matrix
+					hsbMatrix[y][x] = hsb;
 				}
 			}
 			
@@ -93,7 +100,30 @@ public class Utilities {
 			e.printStackTrace();
 		}
 		
-		return pixelMatrix;
+		return hsbMatrix;
+		
+	}
+	
+	/**
+	 * Extracts only the brightness from an HSB image matrix.
+	 * @param hsbImage the HSB image matrix
+	 * @param hsbBrightnessMaxIntValue the maximum HSB as integer for histogram equalization 
+	 * @return the HSB brightness for each pixel
+	 */
+	public static int[][] hsbBrightnessExtractor(float[][][] hsbImage, int hsbBrightnessMaxIntValue) {
+		
+		// matrix for holding brightness values
+		int[][] hsbBrightnessImage = new int[IMAGE_SIZE][IMAGE_SIZE];
+		
+		// extract and set brightnesses for each pixel
+		for (int c = 0; c < IMAGE_SIZE; c ++) {
+			for (int r = 0; r < IMAGE_SIZE; r ++) {
+				hsbBrightnessImage[c][r] = (int) (hsbImage[c][r][2] * hsbBrightnessMaxIntValue);
+			}
+		}
+	
+		// return image with only brightness
+		return hsbBrightnessImage;
 		
 	}
 	

@@ -9,10 +9,10 @@ import javax.swing.JPanel;
 public interface ITransformation {
 	
 	/**
-	 * Provide the transformation with a new image.
+	 * Provide the transformation with a new hsb image.
 	 * @param image the new image to transform.
 	 */
-	public void newImage(int[][] image);
+	public void newImage(float[][][] hsbImage);
 	
 	/**
 	 * Transforms the current image in the transformation objects buffer.

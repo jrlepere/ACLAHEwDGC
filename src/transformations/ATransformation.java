@@ -2,6 +2,8 @@ package transformations;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import utils.Utilities;
+
 /**
  * Abstract Transformation class defining parameter selection panel, and others.
  * @author JLepere2
@@ -11,18 +13,21 @@ public abstract class ATransformation implements ITransformation {
 
 	/**
 	 * Abstract class instantiation.
-	 * @param image default image to transform
-	 * @param imageLabel the label containing the image
+	 * @param hsbImage the original image in hsb format
+	 * @param imageLabel the image label to modify for displaying the transformed image
 	 */
-	public ATransformation(int[][] image, JLabel imageLabel) {
-		this.image = image;
+	public ATransformation(float[][][] hsbImage, JLabel imageLabel) {
+		this.hsbImage = hsbImage;
+		this.hsbBrightnessValues = Utilities.hsbBrightnessExtractor(this.hsbImage, hsbBrightnessMaxIntValue);
 		this.imageLabel = imageLabel;
 		
 		parameterPanel = new JPanel();
 	}
 	
-	public void newImage(int[][] image) {
-		this.image = image;
+	public void newImage(float[][][] hsbImage) {
+		this.hsbImage = hsbImage;
+		this.hsbBrightnessValues = Utilities.hsbBrightnessExtractor(this.hsbImage, hsbBrightnessMaxIntValue);
+		
 		transform();
 	}
 	
@@ -30,7 +35,9 @@ public abstract class ATransformation implements ITransformation {
 		return parameterPanel;
 	}
 	
-	protected int[][] image;
+	protected float[][][] hsbImage;
+	protected int[][] hsbBrightnessValues;
+	protected static final int hsbBrightnessMaxIntValue = 1000;
 	protected JPanel parameterPanel;
 	protected JLabel imageLabel;
 	
