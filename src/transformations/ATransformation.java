@@ -27,8 +27,6 @@ public abstract class ATransformation implements ITransformation {
 	public void newImage(float[][][] hsbImage) {
 		this.hsbImage = hsbImage;
 		this.hsbBrightnessValues = Utilities.hsbBrightnessExtractor(this.hsbImage, hsbBrightnessMaxIntValue);
-		
-		transform();
 	}
 	
 	public JPanel getParameterPanel() {
@@ -37,8 +35,10 @@ public abstract class ATransformation implements ITransformation {
 	
 	protected float[][][] hsbImage;
 	protected int[][] hsbBrightnessValues;
-	protected static final int hsbBrightnessMaxIntValue = 1000;
 	protected JPanel parameterPanel;
 	protected JLabel imageLabel;
+	
+	// hsb brightness is a float between 0 and 1 so we make it between 0 and 1000 for histogram calculations
+	protected static final int hsbBrightnessMaxIntValue = 1000;
 	
 }

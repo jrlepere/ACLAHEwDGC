@@ -49,10 +49,11 @@ public class Utilities {
 	}
 	
 	/**
-	 * Gets an HSB matrix from the default image
+	 * Gets an HSB matrix from the image
+	 * @param imageName the name of the image to load
 	 * @return an HSB matrix of the default image
 	 */
-	public static float[][][] getDefaultImage() {
+	public static float[][][] getImage(String imageName) {
 		
 		// matrix to hold the the hsb values
 		float[][][] hsbMatrix = new float[IMAGE_SIZE][IMAGE_SIZE][3];
@@ -62,7 +63,7 @@ public class Utilities {
 		try {
 			
 			// load the default image
-			image = ImageIO.read(Utilities.class.getResourceAsStream(defaultImagePath));
+			image = ImageIO.read(Utilities.class.getResourceAsStream(imageName));
 			
 			// image parameters
 			int loadedImageHeight = image.getHeight();
@@ -127,9 +128,15 @@ public class Utilities {
 		
 	}
 	
-	private static final String defaultImagePath = "Timmy_Wedding.jpg";
+	public static final String[] images = new String[] {
+		"Buzz.jpg",
+		"Castle.jpg",
+		"Dog.jpg",
+		"Seattle.jpg",
+		"Waterfall.jpg",
+		"Beach.jpg"
+	};
 	
-	// the size of the image that will be represented, may need to resize input image
 	public static final int IMAGE_SIZE = 512;
 	
 }

@@ -1,18 +1,14 @@
 package transformations;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.stream.IntStream;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import utils.SliderPanel;
 import utils.Utilities;
 
 /**
@@ -36,77 +32,40 @@ public class CLAHE extends ATransformation {
 		Smax = 1;
 		
 		// main panel initialization
-		parameterPanel.setLayout(new BorderLayout());
-		
-		// create transformation specific parameter selection panel
-		JPanel paramInputPanel = new JPanel(new GridLayout(3, 2));
+		parameterPanel.setLayout(new GridLayout(3, 1));
 		
 		// block size input
-		paramInputPanel.add(getParameterLabel(" Block Size: "));
-		JTextField blockSizeTextField = new JTextField(""+blockSize);
-		paramInputPanel.add(blockSizeTextField);
+		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16, 32}, 1);
+		blockSizePanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				blockSize = blockSizePanel.getCurrentValue();
+				transform();
+			}
+		});
 		
-		// alpha size input
-		paramInputPanel.add(getParameterLabel(" Alpha: "));
-		JTextField alphaTextField = new JTextField(""+alpha);
-		paramInputPanel.add(alphaTextField);
+		// alpha input
+		SliderPanel alphaPanel = new SliderPanel("Alpha", IntStream.rangeClosed(0, 500).toArray(), 100);
+		alphaPanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				alpha = alphaPanel.getCurrentValue();
+				transform();
+			}
+		});
 		
 		// Smax size input
-		paramInputPanel.add(getParameterLabel(" Smax: "));
-		JTextField SmaxTextField = new JTextField(""+Smax);
-		paramInputPanel.add(SmaxTextField);
-		
-		// execute button
-		JButton executeButton = new JButton("Execute");
-		executeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					// get and test new block size
-					int newBlockSize = Integer.parseInt(blockSizeTextField.getText().trim());
-					if (Utilities.IMAGE_SIZE % newBlockSize != 0 || newBlockSize <= 0) {
-						JOptionPane.showMessageDialog(null, "Enter a block size such that:\n512 % block size = 0\n(2, 4, 8, 16, ...)", "Block Size Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// get and test new alpha
-					int newAlpha = Integer.parseInt(alphaTextField.getText().trim());
-					if (newAlpha < 0) {
-						JOptionPane.showMessageDialog(null, "Enter an alpha >= 0", "Alpha Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// get and test new Smax
-					int newSmax = Integer.parseInt(SmaxTextField.getText().trim());
-					if (newSmax < 0) {
-						JOptionPane.showMessageDialog(null, "Enter an Smax >= 0", "Smax Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// All passed, set new parameters and transform image
-					blockSize = newBlockSize;
-					alpha = newAlpha;
-					Smax = newSmax;
-					transform();
-					
-				} catch (Exception err) {
-					JOptionPane.showMessageDialog(null, "There was a parse int error.\nMake sure all inputs are integers.", "Parse Int Error", JOptionPane.ERROR_MESSAGE);
-				}
+		SliderPanel SmaxPanel = new SliderPanel("Smax", IntStream.rangeClosed(1, 40).toArray(), 0);
+		SmaxPanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				Smax = SmaxPanel.getCurrentValue();
+				transform();
 			}
 		});
 		
 		// add components to main panel
-		parameterPanel.add(paramInputPanel, BorderLayout.CENTER);
-		parameterPanel.add(executeButton, BorderLayout.SOUTH);
-	}
-	
-	/**
-	 * Gets a label to specify what parameter to modify for organization.
-	 * @param text the text description
-	 * @return a label for the parameter.
-	 */
-	private JLabel getParameterLabel(String text) {
-		JLabel parameterLabel = new JLabel(text);
-		parameterLabel.setHorizontalTextPosition(JLabel.CENTER);
-		parameterLabel.setHorizontalAlignment(JLabel.CENTER);
-		parameterLabel.setPreferredSize(new Dimension(150, 25));
-		return parameterLabel;
+		parameterPanel.add(blockSizePanel);
+		parameterPanel.add(alphaPanel);
+		parameterPanel.add(SmaxPanel);
+		
 	}
 
 	

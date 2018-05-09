@@ -3,10 +3,15 @@ import java.awt.CardLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 import transformations.ACLAHE;
@@ -40,9 +45,18 @@ public class Main {
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		// List for all the transformations to alert when a new image has been loaded
+		allTransformations = new LinkedList<>();
+		
+		// stores the combo boxes to repaint on image change
+		transformationComboBoxes = new LinkedList<>();
+		
 		// add left and right split image components
 		frame.add(getImageSplitPanel());
 		frame.add(getImageSplitPanel());
+		
+		// set the menu bar
+		frame.setJMenuBar(getMenuBar());
 		
 		// show the frame
 		frame.setVisible(true);
@@ -76,7 +90,7 @@ public class Main {
 		imageLabel.setVerticalAlignment(JLabel.CENTER);
 		
 		// default image
-		float[][][] defaultImage = Utilities.getDefaultImage();
+		float[][][] defaultImage = Utilities.getImage(Utilities.images[0]);
 		
 		// transformations
 		ITransformation[] transformations = new ITransformation[] {
@@ -86,6 +100,9 @@ public class Main {
 			new ACLAHE(defaultImage, imageLabel),
 			new ACLAHEwDGC(defaultImage, imageLabel)
 		};
+		
+		// add the transformations in this split panel to the global transformation holder
+		for (ITransformation t : transformations) allTransformations.add(t);
 		
 		// add parameter selection panel for each transformation to card layout
 		for (ITransformation transform : transformations) {
@@ -108,6 +125,9 @@ public class Main {
 			}
 		});
 		
+		// add combo box to list for image repainting
+		transformationComboBoxes.add(transformationSelectionBox);
+		
 		// initialize the selection
 		transformationSelectionBox.setSelectedIndex(0);
 		
@@ -124,8 +144,57 @@ public class Main {
 		
 	}
 	
+	public static JMenuBar getMenuBar() {
+		
+		/*
+		 * Menu Bar
+		 *   - File Menu
+		 *      - Images
+		 *         - Buzz.jpg
+		 *         - Waterfal.jpg
+		 *         - ... 
+		 */
+		
+		// menus
+		JMenuBar menuBar = new JMenuBar();
+		JMenu fileMenu = new JMenu("File");
+		JMenu imageMenu = new JMenu("Images");
+		
+		// add a menu item for each image 
+		for (String imageName : Utilities.images) {
+			
+			// the menu item for this image
+			JMenuItem imageItem = new JMenuItem(imageName);
+			
+			// notifies each transformation that a new image has been loaded
+			imageItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					// gets the image as hsb
+					float[][][] hsbImage = Utilities.getImage(imageItem.getText());
+					// notifies each transformation
+					for (ITransformation t : allTransformations) t.newImage(hsbImage);
+					// alert the combo boxes of a change so the current algorithm can execute on the new image
+					for (JComboBox<ITransformation> comboBox : transformationComboBoxes) {
+						comboBox.setSelectedIndex(comboBox.getSelectedIndex());
+					}
+				}
+			});
+			
+			// add this menu item
+			imageMenu.add(imageItem);
+		}
+		
+		// compile menus
+		fileMenu.add(imageMenu);
+		menuBar.add(fileMenu);
+		
+		return menuBar;
+	}
+	
 	private static final String FRAME_TITLE = "ACLAHEwDGC";
 	private static final int FRAME_WIDTH = 1050;
 	private static final int FRAME_HEIGHT = 675;
+	private static List<ITransformation> allTransformations;
+	private static List<JComboBox<ITransformation>> transformationComboBoxes;
 	
 }

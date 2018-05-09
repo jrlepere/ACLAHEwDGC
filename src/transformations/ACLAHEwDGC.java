@@ -1,18 +1,14 @@
 package transformations;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.stream.IntStream;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
+import utils.SliderPanel;
 import utils.Utilities;
 
 /**
@@ -31,98 +27,57 @@ public class ACLAHEwDGC extends ATransformation {
 		super(hsbImage, imageLabel);
 		
 		// initial parameters
-		blockSize = 4;
+		blockSize = 2;
 		alpha = 100;
 		P = 1;
 		D = 50;
 		
 		// main panel initialization
-		parameterPanel.setLayout(new BorderLayout());
-		
-		// create transformation specific parameter selection panel
-		JPanel paramInputPanel = new JPanel(new GridLayout(4, 2));
+		parameterPanel.setLayout(new GridLayout(4, 1));
 		
 		// block size input
-		paramInputPanel.add(getParameterLabel(" Block Size: "));
-		JTextField blockSizeTextField = new JTextField(""+blockSize);
-		paramInputPanel.add(blockSizeTextField);
+		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16, 32}, 1);
+		blockSizePanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				blockSize = blockSizePanel.getCurrentValue();
+				transform();
+			}
+		});
 		
-		// alpha size input
-		paramInputPanel.add(getParameterLabel(" Alpha: "));
-		JTextField alphaTextField = new JTextField(""+alpha);
-		paramInputPanel.add(alphaTextField);
+		// alpha input
+		SliderPanel alphaPanel = new SliderPanel("Alpha", IntStream.rangeClosed(0, 500).toArray(), 100);
+		alphaPanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				alpha = alphaPanel.getCurrentValue();
+				transform();
+			}
+		});
 		
-		// Smax size input
-		paramInputPanel.add(getParameterLabel(" P: "));
-		JTextField PTextField = new JTextField(""+P);
-		paramInputPanel.add(PTextField);
+		// P size input
+		SliderPanel PPanel = new SliderPanel("P", IntStream.rangeClosed(1, 40).toArray(), 0);
+		PPanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				P = PPanel.getCurrentValue();
+				transform();
+			}
+		});
 		
-		// D size input
-		paramInputPanel.add(getParameterLabel(" D: "));
-		JTextField DTextField = new JTextField(""+D);
-		paramInputPanel.add(DTextField);
-		
-		// execute button
-		JButton executeButton = new JButton("Execute");
-		executeButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					// get and test new block size
-					int newBlockSize = Integer.parseInt(blockSizeTextField.getText().trim());
-					if (Utilities.IMAGE_SIZE % newBlockSize != 0 || newBlockSize <= 0) {
-						JOptionPane.showMessageDialog(null, "Enter a block size such that:\n512 % block size = 0\n(2, 4, 8, 16, ...)", "Block Size Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// get and test new alpha
-					int newAlpha = Integer.parseInt(alphaTextField.getText().trim());
-					if (newAlpha < 0) {
-						JOptionPane.showMessageDialog(null, "Enter an alpha >= 0", "Alpha Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// get and test new P
-					int newP = Integer.parseInt(PTextField.getText().trim());
-					if (newP < 0) {
-						JOptionPane.showMessageDialog(null, "Enter a P >= 0", "P Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// get and test new P
-					int newD = Integer.parseInt(DTextField.getText().trim());
-					if (newD < 0 || newD > 100) {
-						JOptionPane.showMessageDialog(null, "Enter 0 <= D <= 100", "D Error", JOptionPane.ERROR_MESSAGE);
-					}
-					
-					// All passed, set new parameters and transform image
-					blockSize = newBlockSize;
-					alpha = newAlpha;
-					P = newP;
-					D = newD;
-					transform();
-					
-				} catch (Exception err) {
-					JOptionPane.showMessageDialog(null, "There was a parse int error.\nMake sure all inputs are integers.", "Parse Int Error", JOptionPane.ERROR_MESSAGE);
-				}
+		// P size input
+		SliderPanel DPanel = new SliderPanel("D", IntStream.rangeClosed(0, 100).toArray(), 50);
+		DPanel.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				D = DPanel.getCurrentValue();
+				transform();
 			}
 		});
 		
 		// add components to main panel
-		parameterPanel.add(paramInputPanel, BorderLayout.CENTER);
-		parameterPanel.add(executeButton, BorderLayout.SOUTH);
-	}
-	
-	/**
-	 * Gets a label to specify what parameter to modify for organization.
-	 * @param text the text description
-	 * @return a label for the parameter.
-	 */
-	private JLabel getParameterLabel(String text) {
-		JLabel parameterLabel = new JLabel(text);
-		parameterLabel.setHorizontalTextPosition(JLabel.CENTER);
-		parameterLabel.setHorizontalAlignment(JLabel.CENTER);
-		parameterLabel.setPreferredSize(new Dimension(150, 25));
-		return parameterLabel;
+		parameterPanel.add(blockSizePanel);
+		parameterPanel.add(alphaPanel);
+		parameterPanel.add(PPanel);
+		parameterPanel.add(DPanel);
 	}
 
-	
 	public void transform() {
 		
 		/*
@@ -339,7 +294,7 @@ public class ACLAHEwDGC extends ATransformation {
 					if (T1 > hsbBrightnessMaxIntValue) T1 = hsbBrightnessMaxIntValue;
 					
 					// Gamma calculation
-					int Gamma = (int) (Lmax * Math.pow(1.0/Lmax, (1.0 + cdf) / 2.0));
+					int Gamma = (int) (Lmax * Math.pow(((double) brightness)/Lmax, (1.0 + cdf) / 2.0));
 					
 					// Set L
 					if (r > ((D*hsbBrightnessMaxIntValue)/100.0)) {
