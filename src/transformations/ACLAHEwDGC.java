@@ -20,26 +20,27 @@ import utils.Utilities;
  * @author JLepere2
  * @date 05/08/2018
  */
-public class ACLAHE extends ATransformation {
+public class ACLAHEwDGC extends ATransformation {
 
 	/**
 	 * Creates object for ACLAHE transformation. 
 	 * @param hsbImage the original image in hsb format
 	 * @param imageLabel the image label to modify for displaying the transformed image
 	 */
-	public ACLAHE(float[][][] hsbImage, JLabel imageLabel) {
+	public ACLAHEwDGC(float[][][] hsbImage, JLabel imageLabel) {
 		super(hsbImage, imageLabel);
 		
 		// initial parameters
 		blockSize = 4;
 		alpha = 100;
 		P = 1;
+		D = 50;
 		
 		// main panel initialization
 		parameterPanel.setLayout(new BorderLayout());
 		
 		// create transformation specific parameter selection panel
-		JPanel paramInputPanel = new JPanel(new GridLayout(3, 2));
+		JPanel paramInputPanel = new JPanel(new GridLayout(4, 2));
 		
 		// block size input
 		paramInputPanel.add(getParameterLabel(" Block Size: "));
@@ -55,6 +56,11 @@ public class ACLAHE extends ATransformation {
 		paramInputPanel.add(getParameterLabel(" P: "));
 		JTextField PTextField = new JTextField(""+P);
 		paramInputPanel.add(PTextField);
+		
+		// D size input
+		paramInputPanel.add(getParameterLabel(" D: "));
+		JTextField DTextField = new JTextField(""+D);
+		paramInputPanel.add(DTextField);
 		
 		// execute button
 		JButton executeButton = new JButton("Execute");
@@ -79,10 +85,17 @@ public class ACLAHE extends ATransformation {
 						JOptionPane.showMessageDialog(null, "Enter a P >= 0", "P Error", JOptionPane.ERROR_MESSAGE);
 					}
 					
+					// get and test new P
+					int newD = Integer.parseInt(DTextField.getText().trim());
+					if (newD < 0 || newD > 100) {
+						JOptionPane.showMessageDialog(null, "Enter 0 <= D <= 100", "D Error", JOptionPane.ERROR_MESSAGE);
+					}
+					
 					// All passed, set new parameters and transform image
 					blockSize = newBlockSize;
 					alpha = newAlpha;
 					P = newP;
+					D = newD;
 					transform();
 					
 				} catch (Exception err) {
@@ -171,6 +184,10 @@ public class ACLAHE extends ATransformation {
 			}
 		}
 		
+		// get max value and array for holding the histogram globally for 0.75 cdf
+		int Lmax = Integer.MIN_VALUE;
+		int[] globalHistogram = new int[hsbBrightnessMaxIntValue+1];
+		
 		// set the histogram for each block
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
@@ -186,12 +203,32 @@ public class ACLAHE extends ATransformation {
 						if (brightness < minPerBlock[blockC][blockR]) minPerBlock[blockC][blockR] = brightness;
 						if (brightness > maxPerBlock[blockC][blockR]) maxPerBlock[blockC][blockR] = brightness;
 						avgPerBlock[blockC][blockR] += brightness;
+						
+						// update global max
+						if (brightness > Lmax) Lmax = brightness;
+						
+						// update global histogram
+						globalHistogram[brightness] += 1;
 					}
 				}
 				// calculate average per block
 				avgPerBlock[blockC][blockR] /= pixelsPerBock;
 			}
 		}
+		
+		// gets Lalpha such that cdf(Lalpha) = 0.75
+		int cdfTarget = (int) ((pixelsPerBock * numBlocksCol * numBlocksRow) * 0.75);
+		int LalphaDiff = Integer.MAX_VALUE;
+		int Lalpha = 0;
+		for (int i = 0; i < globalHistogram.length; i ++) {
+			if (i > 0) globalHistogram[i] += globalHistogram[i-1];
+			int diff = Math.abs(globalHistogram[i] - cdfTarget);
+			if (diff < LalphaDiff) {
+				LalphaDiff = diff;
+				Lalpha = i;
+			}
+		}
+		
 		
 		// standard deviation for each block
 		double[][] stdPerBlock = new double[numBlocksCol][numBlocksRow];
@@ -270,6 +307,7 @@ public class ACLAHE extends ATransformation {
 		
 		// STEP 4 - Histogram Equalization Function Mapping -- //
 		
+		
 		// Calculate mapped value for each brightness value per block w/ histogram equalization
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
@@ -281,12 +319,35 @@ public class ACLAHE extends ATransformation {
 				// the maximum value for this block
 				int maxValueInBlock = maxPerBlock[blockC][blockR];
 				
+				// r: dynamic range of the block
+				int r = maxPerBlock[blockC][blockR] - minPerBlock[blockC][blockR];
+				
 				// the histogram equalization factor
-				double heFactor = ((double) maxValueInBlock) / pixelsPerBock;
+				double cdfFactor = (double) histogramsPerBlock[blockC][blockR][hsbBrightnessMaxIntValue];
 				
 				// calculate mapping function w/ histogram equalization
 				for (int brightness = 0; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
-					histogramsPerBlock[blockC][blockR][brightness] = (int) (heFactor * histogramsPerBlock[blockC][blockR][brightness]);
+					
+					// get cdf of l
+					double cdf = histogramsPerBlock[blockC][blockR][brightness] / cdfFactor;
+					
+					// weighted enhancement for gamma 1
+					double Wen = Math.pow(((double) Lmax) / Lalpha, 1.0 - (Math.log(Math.E + cdf) / 8));
+					
+					// T1
+					int T1 = (int) (maxValueInBlock * Wen * cdf);
+					if (T1 > hsbBrightnessMaxIntValue) T1 = hsbBrightnessMaxIntValue;
+					
+					// Gamma calculation
+					int Gamma = (int) (Lmax * Math.pow(1.0/Lmax, (1.0 + cdf) / 2.0));
+					
+					// Set L
+					if (r > ((D*hsbBrightnessMaxIntValue)/100.0)) {
+						histogramsPerBlock[blockC][blockR][brightness] = Math.max(T1, Gamma);
+					} else {
+						histogramsPerBlock[blockC][blockR][brightness] = Gamma;
+					}
+					
 				}
 			}
 		}
@@ -367,11 +428,12 @@ public class ACLAHE extends ATransformation {
 	}
 	
 	public String toString() {
-		return "ACLAHE";
+		return "ACLAHEwDGC";
 	}
 	
 	private int blockSize;
 	private int alpha;
 	private int P;
+	private int D;
 	
 }

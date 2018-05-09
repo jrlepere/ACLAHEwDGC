@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import transformations.ACLAHE;
+import transformations.ACLAHEwDGC;
 import transformations.CLAHE;
 import transformations.HistogramEqualization;
 import transformations.ITransformation;
@@ -82,7 +83,8 @@ public class Main {
 			new NoTransformation(defaultImage, imageLabel)	,
 			new HistogramEqualization(defaultImage, imageLabel),
 			new CLAHE(defaultImage, imageLabel),
-			new ACLAHE(defaultImage, imageLabel)
+			new ACLAHE(defaultImage, imageLabel),
+			new ACLAHEwDGC(defaultImage, imageLabel)
 		};
 		
 		// add parameter selection panel for each transformation to card layout
