@@ -31,6 +31,8 @@ Each histogram is trimmed based on its respective clipping point and the trimmed
 The src file can be compiled by 
 
 > cd src
+
 > javac Main.java
+
 > java Main
 
