@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 
 import transformations.ACLAHE;
 import transformations.ACLAHEwDGC;
+import transformations.ACLAHEwDGC2;
 import transformations.CLAHE;
 import transformations.HistogramEqualization;
 import transformations.ITransformation;
@@ -125,7 +126,8 @@ public class Main {
 			new HistogramEqualization(defaultImage, imageLabel),
 			new CLAHE(defaultImage, imageLabel),
 			new ACLAHE(defaultImage, imageLabel),
-			new ACLAHEwDGC(defaultImage, imageLabel)
+			new ACLAHEwDGC(defaultImage, imageLabel),
+			new ACLAHEwDGC2(defaultImage, imageLabel)
 		};
 		
 		// add the transformations in this split panel to the global transformation holder

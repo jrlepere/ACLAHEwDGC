@@ -12,18 +12,18 @@ import utils.SliderPanel;
 import utils.Utilities;
 
 /**
- * Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Correction transformation algorithm.
+ * Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Correction transformation algorithm with a new weight.
  * @author JLepere2
  * @date 05/08/2018
  */
-public class ACLAHEwDGC extends ATransformation {
+public class ACLAHEwDGC2 extends ATransformation {
 
 	/**
 	 * Creates object for ACLAHE transformation. 
 	 * @param hsbImage the original image in hsb format
 	 * @param imageLabel the image label to modify for displaying the transformed image
 	 */
-	public ACLAHEwDGC(float[][][] hsbImage, JLabel imageLabel) {
+	public ACLAHEwDGC2(float[][][] hsbImage, JLabel imageLabel) {
 		super(hsbImage, imageLabel);
 		
 		// initial parameters
@@ -287,10 +287,12 @@ public class ACLAHEwDGC extends ATransformation {
 					double cdf = histogramsPerBlock[blockC][blockR][brightness] / cdfFactor;
 					
 					// weighted enhancement for gamma 1
-					double Wen = Math.pow(((double) Lmax) / Lalpha, 1.0 - (Math.log(Math.E + cdf) / 8));
+					double Wen = 1.0 / (1 + Math.pow(Math.E, -1.0 * Math.pow(((double) Lmax) / Lalpha, 1.0 - (Math.log(Math.E + cdf) / 8))));
 					
 					// T1
 					int T1 = (int) (maxValueInBlock * Wen * cdf);
+					
+					// not this should never be true because of Wen modification
 					if (T1 > hsbBrightnessMaxIntValue) T1 = hsbBrightnessMaxIntValue;
 					
 					// Gamma calculation
@@ -383,7 +385,7 @@ public class ACLAHEwDGC extends ATransformation {
 	}
 	
 	public String toString() {
-		return "ACLAHEwDGC";
+		return "ACLAHEwDGC2";
 	}
 	
 	private int blockSize;
