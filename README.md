@@ -48,6 +48,7 @@ Transforming Images
    - CLAHE := contrast limited histogram equalization
    - ACLAHE := automatic contrast limited histogram equalization
    - ACLAHEwDGC := automatic contrast limited histogram equalization with dual gamma correction
+
 Modifying Transformation Parameters
 - A panel is available below each image for the user to modify the parameters of the transformation. If no parameters are available for the transformation, none will be displayed.
 
