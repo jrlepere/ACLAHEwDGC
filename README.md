@@ -53,4 +53,5 @@ Transforming Images
 Modifying Transformation Parameters
 - A panel is available below each image for the user to modify the parameters of the transformation. If no parameters are available for the transformation, none will be displayed.
 
+
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/ACLAHEwDGC.png)
