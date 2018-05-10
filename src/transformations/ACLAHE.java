@@ -35,7 +35,7 @@ public class ACLAHE extends ATransformation {
 		parameterPanel.setLayout(new GridLayout(3, 1));
 		
 		// block size input
-		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16, 32}, 1);
+		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16}, 1);
 		blockSizePanel.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				blockSize = blockSizePanel.getCurrentValue();

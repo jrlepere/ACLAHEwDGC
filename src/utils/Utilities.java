@@ -2,9 +2,13 @@ package utils;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
+import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Implements utility functions for the application
@@ -128,13 +132,36 @@ public class Utilities {
 		
 	}
 	
+	public static void saveImage(BufferedImage image) {
+		// save chooser
+		JFileChooser saveChooser = new JFileChooser();
+		saveChooser.setFileFilter(new FileNameExtensionFilter("jpg file","jpg"));
+		
+		// show chooser
+		if (saveChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+			
+			// get file and add jpg extension if needed
+			File imageFile = saveChooser.getSelectedFile();
+			String filePath = imageFile.getPath();
+			if (!filePath.toLowerCase().endsWith(".jpg")) imageFile = new File(filePath + ".jpg");
+			
+			try {
+				// write to file
+				ImageIO.write(image, "jpg", imageFile);
+			} catch (IOException e1) {
+				JOptionPane.showMessageDialog(null, "There was an error saving the image.", "Error Saving Image", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+	}
+	
 	public static final String[] images = new String[] {
 		"Buzz.jpg",
 		"Castle.jpg",
 		"Dog.jpg",
 		"Seattle.jpg",
 		"Waterfall.jpg",
-		"Beach.jpg"
+		"Beach.jpg",
+		"SanFrancisco.jpg"
 	};
 	
 	public static final int IMAGE_SIZE = 512;

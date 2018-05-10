@@ -12,7 +12,7 @@ import utils.SliderPanel;
 import utils.Utilities;
 
 /**
- * Automatic caContrast Limited Adaptive Histogram Equalization transformation algorithm.
+ * Automatic Contrast Limited Adaptive Histogram Equalization transformation algorithm.
  * @author JLepere2
  * @date 05/08/2018
  */
@@ -36,7 +36,7 @@ public class ACLAHEwDGC extends ATransformation {
 		parameterPanel.setLayout(new GridLayout(4, 1));
 		
 		// block size input
-		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16, 32}, 1);
+		SliderPanel blockSizePanel = new SliderPanel("Block Size", new int[]{1, 2, 4, 8, 16}, 1);
 		blockSizePanel.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				blockSize = blockSizePanel.getCurrentValue();

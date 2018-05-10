@@ -1,11 +1,16 @@
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.Icon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -86,8 +91,30 @@ public class Main {
 		
 		// label for the image
 		JLabel imageLabel = new JLabel();
+		imageLabel.setToolTipText("Select to SAVE");
 		imageLabel.setHorizontalAlignment(JLabel.CENTER);
 		imageLabel.setVerticalAlignment(JLabel.CENTER);
+		imageLabel.addMouseListener(new MouseListener() {
+			public void mouseReleased(MouseEvent e) {}
+			public void mousePressed(MouseEvent e) {}
+			public void mouseExited(MouseEvent e) {}
+			public void mouseEntered(MouseEvent e) {}
+			// save the image on click
+			public void mouseClicked(MouseEvent e) {
+				// get the image icon
+				Icon icon = imageLabel.getIcon();
+				// buffered image container to save
+				BufferedImage bi = new BufferedImage(icon.getIconWidth(), icon.getIconHeight(), BufferedImage.TYPE_INT_RGB);
+				// graphics for painting the image
+				Graphics g = bi.createGraphics();
+				// paint the icon to the buffered image container
+				icon.paintIcon(null, g, 0,0);
+				// dispose g
+				g.dispose();
+				// save
+				Utilities.saveImage(bi);
+			}
+		});
 		
 		// default image
 		float[][][] defaultImage = Utilities.getImage(Utilities.images[0]);
