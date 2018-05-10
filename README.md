@@ -15,7 +15,7 @@ Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Corre
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Clipping_Calculation.png)
 
-Each histogram is trimmed based on its respective clipping point and the trimmed values are redistributed throughout the histogram.
+   Each histogram is trimmed based on its respective clipping point and the trimmed values are redistributed throughout the histogram.
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Cut_Histo.jpg)
 
