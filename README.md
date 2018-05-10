@@ -28,7 +28,7 @@ Each histogram is trimmed based on its respective clipping point and the trimmed
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Bilinear.jpg)
 
 # Running the Program
-The src file can be compiled by 
+The src files can be compiled and ran by 
 
 > cd src
 
@@ -36,3 +36,4 @@ The src file can be compiled by
 
 > java Main
 
+Alternatively, the program can be executed by downloading and running the attached jar file.
