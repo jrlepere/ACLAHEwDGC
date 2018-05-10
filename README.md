@@ -26,7 +26,7 @@ Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Corre
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Bilinear.jpg)
 
 # ACLAHEwDGC2
-L1 in the ACLAHEwDGC calculation has the ability to exceed the maximum gray value. This is because the Wen calculation is not normalized. Therefore, a modified version of ACLAHEwDGC, appropriately names ACLAHEwDGC2, takes Wen equals the sigmoid of the previous Wen calculation. This constrains the range of Wen to [0.5, 1.0].
+L1 in the ACLAHEwDGC calculation has the ability to exceed the maximum gray value because lmax and cdf(l) have a maximum of 255 and 1, respectively. Therefore, to keep L1 in [0,255], Wen must be in [0.0, 1.0]. However, this is not always true. Therefore, a modified version of ACLAHEwDGC, appropriately names ACLAHEwDGC2, takes W'en equal to the sigmoid of the previous Wen calculation. This constrains the range of Wen to [0.5, 1.0].
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Wen2.png)
 
