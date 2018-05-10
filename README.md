@@ -37,3 +37,18 @@ The src files can be compiled and ran by
 > java Main
 
 Alternatively, the program can be executed by downloading and running the attached jar file.
+
+# Navigating the Program
+Loading Images
+- There are 6 images provided with the application. These can be loaded by selecting File > Images followed by the name of the desired image to load.
+Transforming Images
+- Above each of the image panels, there is a combo box for the user to select the desired transformation. Those available are 
+   - Original Image := no transformation done
+   - Histogram Equalization := traditional histogram equalization
+   - CLAHE := contrast limited histogram equalization
+   - ACLAHE := automatic contrast limited histogram equalization
+   - ACLAHEwDGC := automatic contrast limited histogram equalization with dual gamma correction
+Modifying Transformation Parameters
+- A panel is available below each image for the user to modify the parameters of the transformation. If no parameters are available for the transformation, none will be displayed.
+
+![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/ACLAHEwDGC.png)
