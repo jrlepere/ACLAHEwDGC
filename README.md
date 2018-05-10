@@ -15,8 +15,6 @@ Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Corre
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Clipping_Calculation.png)
 
-   Each histogram is trimmed based on its respective clipping point and the trimmed values are redistributed throughout the histogram.
-
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Cut_Histo.jpg)
 
 4) Local Histogram Equalization: Local histogram equalization function mappings are calculated for each block. This creates a function that maps each gray value to the histogram equalized gray value with respect to each block. This is done by calculating T for each block with the following equations:
