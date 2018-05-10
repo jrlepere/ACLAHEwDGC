@@ -26,3 +26,11 @@ Each histogram is trimmed based on its respective clipping point and the trimmed
 5) Bilinear Interpolation: Bilinear interpolation is performed with respect to neighboring blocks to calculate the final image.
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Bilinear.jpg)
+
+# Running the Program
+The src file can be compiled by 
+'''
+cd src
+javac Main.java
+java Main
+'''
