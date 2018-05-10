@@ -19,5 +19,8 @@ Each histogram is trimmed based on its respective clipping point and the trimmed
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Cut_Histo.jpg)
 
-4) Local Histogram Equalization: Local histogram equalization function mappings are calculated for each block. This creates a function that maps each gray value to the histogram equalized gray value with respect to each block.
+4) Local Histogram Equalization: Local histogram equalization function mappings are calculated for each block. This creates a function that maps each gray value to the histogram equalized gray value with respect to each block. This is done by the following equations:
+
+![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Histo_Equal_Calc.png)
+
 5) Bilinear Interpolation: Bilinear interpolation is performed with respect to neighboring blocks to calculate the final image.
