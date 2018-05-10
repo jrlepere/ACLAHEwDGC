@@ -41,6 +41,7 @@ Alternatively, the program can be executed by downloading and running the attach
 # Navigating the Program
 Loading Images
 - There are 7 images provided with the application. These can be loaded by selecting File > Images followed by the name of the desired image to load.
+
 Transforming Images
 - Above each of the image panels, there is a combo box for the user to select the desired transformation. Those available are 
    - Original Image := no transformation done
