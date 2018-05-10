@@ -25,6 +25,11 @@ Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Corre
 
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Bilinear.jpg)
 
+# ACLAHEwDGC2
+L1 in the ACLAHEwDGC calculation has the ability to exceed the maximum gray value. This is because the Wen calculation is not normalized. Therefore, a modified version of ACLAHEwDGC, appropriately names ACLAHEwDGC2, takes Wen equals the sigmoid of the previous Wen calculation. This constrains the range of Wen to [0.5, 1.0].
+
+![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Wen2.png)
+
 # Running the Program
 The src files can be compiled and ran by 
 
@@ -47,6 +52,7 @@ Transforming Images
    - CLAHE := contrast limited histogram equalization
    - ACLAHE := automatic contrast limited histogram equalization
    - ACLAHEwDGC := automatic contrast limited histogram equalization with dual gamma correction
+   - ACLAHEwDGC2 := automatic contrast limited histogram equalization with dual gamma correction with normalized Wen
 
 Modifying Transformation Parameters
 - A panel is available below each image for the user to modify the parameters of the transformation. If no parameters are available for the transformation, none will be displayed.
