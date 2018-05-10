@@ -8,7 +8,6 @@ Automatic Contrast Limited Adaptive Histogram Equalization with Dual Gamma Corre
 2) Local Histogram Calculations: The histograms of each block are calculated.
 ![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Buzz_Cut_Histo.jpg)
 3) Local Histogram Redistribution: The histograms of each block are clipped and redistributed. The clipping point is calculated as follows: 
-β = (M/N)*(1+P*(lmax/R)+(α/100)*(σ/(Avg+c)))
-<img src="https://latex.codecogs.com/svg.latex?\Large&space;x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}" title="\Large x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}" />
+![alt text](https://github.com/jrlepere/ACLAHEwDGC/blob/master/imgs/Clipping_Calculation.png)
 4) Local Histogram Equalization: Local histogram equalization function mappings are calculated for each block. This creates a function that maps each gray value to the histogram equalized gray value with respect to each block.
 5) Bilinear Interpolation: Bilinear interpolation is performed with respect to neighboring blocks to calculate the final image.
