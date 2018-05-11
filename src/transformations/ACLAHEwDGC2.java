@@ -262,7 +262,6 @@ public class ACLAHEwDGC2 extends ATransformation {
 		
 		// STEP 4 - Histogram Equalization Function Mapping -- //
 		
-		
 		// Calculate mapped value for each brightness value per block w/ histogram equalization
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
