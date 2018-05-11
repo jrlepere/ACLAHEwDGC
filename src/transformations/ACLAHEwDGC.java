@@ -266,10 +266,35 @@ public class ACLAHEwDGC extends ATransformation {
 		// Calculate mapped value for each brightness value per block w/ histogram equalization
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
+				
+				// store the histogram for pdf calculations
+				int[] storedHisto = new int[hsbBrightnessMaxIntValue+1];
+				storedHisto[0] = histogramsPerBlock[blockC][blockR][0];
+				
+				// min and max pdf
+				int pdfMin = storedHisto[0];
+				int pdfMax = storedHisto[0];
+				
 				// calculate running histogram
 				for (int brightness = 1; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					// update for pdf
+					storedHisto[brightness] = histogramsPerBlock[blockC][blockR][brightness];
+					// update min and max pdf
+					if (storedHisto[brightness] < pdfMin) pdfMin = storedHisto[brightness];
+					if (storedHisto[brightness] > pdfMax) pdfMax = storedHisto[brightness];
+					// update for cdf
 					histogramsPerBlock[blockC][blockR][brightness] += histogramsPerBlock[blockC][blockR][brightness-1];
 				}
+				
+				// pdf weighted calculations
+				int[] cumulativeHistoWeighted = new int[hsbBrightnessMaxIntValue+1];
+				for (int brightness = 0; brightness < hsbBrightnessMaxIntValue+1; brightness ++) {
+					cumulativeHistoWeighted[brightness] = pdfMax * ((storedHisto[brightness] - pdfMin) / (pdfMax - pdfMin));
+					if (brightness > 0) cumulativeHistoWeighted[brightness] += cumulativeHistoWeighted[brightness-1];
+				}
+				
+				// get sum of cumulatedHistoWeighted
+				int pdfSum = cumulativeHistoWeighted[hsbBrightnessMaxIntValue];
 				
 				// the maximum value for this block
 				int maxValueInBlock = maxPerBlock[blockC][blockR];
@@ -294,7 +319,7 @@ public class ACLAHEwDGC extends ATransformation {
 					if (T1 > hsbBrightnessMaxIntValue) T1 = hsbBrightnessMaxIntValue;
 					
 					// Gamma calculation
-					int Gamma = (int) (Lmax * Math.pow(((double) brightness)/Lmax, (1.0 + cdf) / 2.0));
+					int Gamma = (int) (Lmax * Math.pow(((double) brightness)/Lmax, (1.0 + (cumulativeHistoWeighted[brightness]/pdfSum)) / 2.0));
 					
 					// Set L
 					if (r > ((D*hsbBrightnessMaxIntValue)/100.0)) {
