@@ -163,7 +163,7 @@ public class CLAHE extends ATransformation {
 		for (int blockC = 0; blockC < numBlocksCol; blockC ++) {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
 				// calculate the clipping point for this block
-				int N = maxPerBlock[blockC][blockR] - minPerBlock[blockC][blockR];
+				double N = maxPerBlock[blockC][blockR] - minPerBlock[blockC][blockR];
 				int B = (int) ((M/N)*(1.0+(alpha/100.0)*Smax));
 				
 				// store the total clipped for redistribution

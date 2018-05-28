@@ -229,7 +229,7 @@ public class ACLAHEwDGC2 extends ATransformation {
 			for (int blockR = 0; blockR < numBlocksRow; blockR ++) {
 				// calculate the clipping point for this block
 				int lmax = maxPerBlock[blockC][blockR];
-				int N = lmax - minPerBlock[blockC][blockR];
+				double N = lmax - minPerBlock[blockC][blockR];
 				int avg = avgPerBlock[blockC][blockR];
 				double std = stdPerBlock[blockC][blockR];
 				int B = (int) ((M/N)*(1.0 + P*(lmax/((float) hsbBrightnessMaxIntValue)) + (alpha/100.0)*(std/(avg+0.0001))));
